@@ -277,24 +277,33 @@ export function Learning() {
           <CardDescription>Supplementary materials to enhance your learning</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="rounded-lg border p-4">
+          <button
+            onClick={() => window.location.hash = 'datasets'}
+            className="w-full rounded-lg border p-4 hover:bg-accent hover:border-primary/50 transition-colors text-left"
+          >
             <h3 className="font-semibold mb-1">Interactive Exercises</h3>
             <p className="text-sm text-muted-foreground">
               Practice with hands-on exercises in the Model Lab and Datasets sections
             </p>
-          </div>
-          <div className="rounded-lg border p-4">
+          </button>
+          <button
+            onClick={() => window.location.hash = 'glossary'}
+            className="w-full rounded-lg border p-4 hover:bg-accent hover:border-primary/50 transition-colors text-left"
+          >
             <h3 className="font-semibold mb-1">Glossary</h3>
             <p className="text-sm text-muted-foreground">
               Quick reference for ML, statistical, and clinical terms
             </p>
-          </div>
-          <div className="rounded-lg border p-4">
+          </button>
+          <button
+            onClick={() => window.location.hash = 'case-studies'}
+            className="w-full rounded-lg border p-4 hover:bg-accent hover:border-primary/50 transition-colors text-left"
+          >
             <h3 className="font-semibold mb-1">Case Studies</h3>
             <p className="text-sm text-muted-foreground">
-              Real-world scenarios demonstrating ML application in clinical settings (coming soon)
+              Real-world scenarios demonstrating ML application in clinical settings
             </p>
-          </div>
+          </button>
         </CardContent>
       </Card>
     </div>
