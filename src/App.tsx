@@ -45,6 +45,9 @@ function App() {
       else if (hash === 'module-9') setCurrentPage('module-9');
       else if (hash === 'module-10') setCurrentPage('module-10');
       else setCurrentPage('home');
+
+      // Scroll to top of page on navigation
+      window.scrollTo(0, 0);
     };
 
     handleHashChange();

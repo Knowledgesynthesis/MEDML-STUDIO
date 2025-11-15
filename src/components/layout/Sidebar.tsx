@@ -1,4 +1,4 @@
-import { Home, Database, Brain, BarChart3, BookOpen, Shield, HelpCircle, X } from 'lucide-react';
+import { Home, Database, Brain, BarChart3, BookOpen, FileText, Shield, HelpCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useStore } from '@/store';
 import { cn } from '@/lib/utils/cn';
@@ -40,6 +40,12 @@ const navItems: NavItem[] = [
     href: '/learning',
     icon: BookOpen,
     description: 'Modules and curriculum',
+  },
+  {
+    title: 'Case Studies',
+    href: '/case-studies',
+    icon: FileText,
+    description: 'Real-world ML applications',
   },
   {
     title: 'Ethics & Bias',
