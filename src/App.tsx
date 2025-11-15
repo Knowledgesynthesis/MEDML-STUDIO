@@ -7,10 +7,11 @@ import { Explainability } from './pages/Explainability';
 import { Learning } from './pages/Learning';
 import { Ethics } from './pages/Ethics';
 import { Glossary } from './pages/Glossary';
+import { CaseStudies } from './pages/CaseStudies';
 import { Module1, Module2, Module3, Module4, Module5, Module6, Module7, Module8, Module9, Module10 } from './pages/modules';
 import { useStore } from './store';
 
-type Page = 'home' | 'datasets' | 'model-lab' | 'explainability' | 'learning' | 'ethics' | 'glossary' |
+type Page = 'home' | 'datasets' | 'model-lab' | 'explainability' | 'learning' | 'ethics' | 'glossary' | 'case-studies' |
   'module-1' | 'module-2' | 'module-3' | 'module-4' | 'module-5' |
   'module-6' | 'module-7' | 'module-8' | 'module-9' | 'module-10';
 
@@ -32,6 +33,7 @@ function App() {
       else if (hash === 'learning') setCurrentPage('learning');
       else if (hash === 'ethics') setCurrentPage('ethics');
       else if (hash === 'glossary') setCurrentPage('glossary');
+      else if (hash === 'case-studies') setCurrentPage('case-studies');
       else if (hash === 'module-1') setCurrentPage('module-1');
       else if (hash === 'module-2') setCurrentPage('module-2');
       else if (hash === 'module-3') setCurrentPage('module-3');
@@ -64,6 +66,8 @@ function App() {
         return <Ethics />;
       case 'glossary':
         return <Glossary />;
+      case 'case-studies':
+        return <CaseStudies />;
       case 'module-1':
         return <Module1 />;
       case 'module-2':
