@@ -183,7 +183,7 @@ export function ModelLab() {
               <p className="text-muted-foreground">
                 Please select a dataset from the Datasets page first
               </p>
-              <Button variant="outline" className="mt-4">
+              <Button variant="outline" className="mt-4" onClick={() => window.location.hash = 'datasets'}>
                 Go to Datasets
               </Button>
             </div>
@@ -257,7 +257,10 @@ export function ModelLab() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setSelectedModel(model)}
+                    onClick={() => {
+                      setSelectedModel(model);
+                      window.location.hash = 'explainability';
+                    }}
                   >
                     <BarChart className="h-4 w-4 mr-2" />
                     View Details

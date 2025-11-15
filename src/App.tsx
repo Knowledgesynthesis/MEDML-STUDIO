@@ -4,9 +4,12 @@ import { Home } from './pages/Home';
 import { Datasets } from './pages/Datasets';
 import { ModelLab } from './pages/ModelLab';
 import { Explainability } from './pages/Explainability';
+import { Learning } from './pages/Learning';
+import { Ethics } from './pages/Ethics';
+import { Glossary } from './pages/Glossary';
 import { useStore } from './store';
 
-type Page = 'home' | 'datasets' | 'model-lab' | 'explainability';
+type Page = 'home' | 'datasets' | 'model-lab' | 'explainability' | 'learning' | 'ethics' | 'glossary';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -23,6 +26,9 @@ function App() {
       if (hash === 'datasets') setCurrentPage('datasets');
       else if (hash === 'model-lab') setCurrentPage('model-lab');
       else if (hash === 'explainability') setCurrentPage('explainability');
+      else if (hash === 'learning') setCurrentPage('learning');
+      else if (hash === 'ethics') setCurrentPage('ethics');
+      else if (hash === 'glossary') setCurrentPage('glossary');
       else setCurrentPage('home');
     };
 
@@ -39,6 +45,12 @@ function App() {
         return <ModelLab />;
       case 'explainability':
         return <Explainability />;
+      case 'learning':
+        return <Learning />;
+      case 'ethics':
+        return <Ethics />;
+      case 'glossary':
+        return <Glossary />;
       default:
         return <Home />;
     }
