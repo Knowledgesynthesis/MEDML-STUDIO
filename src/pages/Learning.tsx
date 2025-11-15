@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { BookOpen, CheckCircle2, Clock, Lock } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock } from 'lucide-react';
 
 interface Module {
   id: string;
@@ -88,7 +88,7 @@ const modules: Module[] = [
       'Feature Importance in Ensembles',
       'When to Use Ensemble Methods',
     ],
-    locked: true,
+    completed: false,
   },
   {
     id: '6',
@@ -103,7 +103,7 @@ const modules: Module[] = [
       'LIME (Local Interpretable Model-agnostic Explanations)',
       'Partial Dependence Plots',
     ],
-    locked: true,
+    completed: false,
   },
   {
     id: '7',
@@ -118,7 +118,7 @@ const modules: Module[] = [
       'Reliability Diagrams',
       'Overconfidence Risks in CDS',
     ],
-    locked: true,
+    completed: false,
   },
   {
     id: '8',
@@ -133,7 +133,7 @@ const modules: Module[] = [
       'Clinical Trust Frameworks',
       'When NOT to Use a Model',
     ],
-    locked: true,
+    completed: false,
   },
   {
     id: '9',
@@ -148,7 +148,7 @@ const modules: Module[] = [
       'Ethical Considerations',
       'Health Equity and AI',
     ],
-    locked: true,
+    completed: false,
   },
   {
     id: '10',
@@ -163,7 +163,7 @@ const modules: Module[] = [
       'Stakeholder Communication',
       'Implementation Considerations',
     ],
-    locked: true,
+    completed: false,
   },
 ];
 
@@ -181,7 +181,7 @@ export function Learning() {
       <Card className="border-primary/50 bg-primary/5">
         <CardHeader>
           <CardTitle>Your Progress</CardTitle>
-          <CardDescription>Complete modules in order to unlock advanced content</CardDescription>
+          <CardDescription>Track your progress through the curriculum</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -208,11 +208,7 @@ export function Learning() {
           {modules.map((module) => (
             <Card
               key={module.id}
-              className={`transition-all ${
-                module.locked
-                  ? 'opacity-60'
-                  : 'hover:shadow-lg cursor-pointer'
-              }`}
+              className="transition-all hover:shadow-lg cursor-pointer"
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -220,8 +216,6 @@ export function Learning() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                       {module.completed ? (
                         <CheckCircle2 className="h-6 w-6 text-green-500" />
-                      ) : module.locked ? (
-                        <Lock className="h-6 w-6 text-muted-foreground" />
                       ) : (
                         <BookOpen className="h-6 w-6 text-primary" />
                       )}
@@ -266,18 +260,9 @@ export function Learning() {
                 <Button
                   className="w-full"
                   variant={module.completed ? 'outline' : 'default'}
-                  disabled={module.locked}
+                  onClick={() => window.location.hash = `module-${module.id}`}
                 >
-                  {module.locked ? (
-                    <>
-                      <Lock className="h-4 w-4 mr-2" />
-                      Locked - Complete Previous Modules
-                    </>
-                  ) : module.completed ? (
-                    'Review Module'
-                  ) : (
-                    'Start Module'
-                  )}
+                  {module.completed ? 'Review Module' : 'Start Module'}
                 </Button>
               </CardContent>
             </Card>

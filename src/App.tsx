@@ -7,9 +7,12 @@ import { Explainability } from './pages/Explainability';
 import { Learning } from './pages/Learning';
 import { Ethics } from './pages/Ethics';
 import { Glossary } from './pages/Glossary';
+import { Module1, Module2, Module3, Module4, Module5, Module6, Module7, Module8, Module9, Module10 } from './pages/modules';
 import { useStore } from './store';
 
-type Page = 'home' | 'datasets' | 'model-lab' | 'explainability' | 'learning' | 'ethics' | 'glossary';
+type Page = 'home' | 'datasets' | 'model-lab' | 'explainability' | 'learning' | 'ethics' | 'glossary' |
+  'module-1' | 'module-2' | 'module-3' | 'module-4' | 'module-5' |
+  'module-6' | 'module-7' | 'module-8' | 'module-9' | 'module-10';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -29,6 +32,16 @@ function App() {
       else if (hash === 'learning') setCurrentPage('learning');
       else if (hash === 'ethics') setCurrentPage('ethics');
       else if (hash === 'glossary') setCurrentPage('glossary');
+      else if (hash === 'module-1') setCurrentPage('module-1');
+      else if (hash === 'module-2') setCurrentPage('module-2');
+      else if (hash === 'module-3') setCurrentPage('module-3');
+      else if (hash === 'module-4') setCurrentPage('module-4');
+      else if (hash === 'module-5') setCurrentPage('module-5');
+      else if (hash === 'module-6') setCurrentPage('module-6');
+      else if (hash === 'module-7') setCurrentPage('module-7');
+      else if (hash === 'module-8') setCurrentPage('module-8');
+      else if (hash === 'module-9') setCurrentPage('module-9');
+      else if (hash === 'module-10') setCurrentPage('module-10');
       else setCurrentPage('home');
     };
 
@@ -51,6 +64,26 @@ function App() {
         return <Ethics />;
       case 'glossary':
         return <Glossary />;
+      case 'module-1':
+        return <Module1 />;
+      case 'module-2':
+        return <Module2 />;
+      case 'module-3':
+        return <Module3 />;
+      case 'module-4':
+        return <Module4 />;
+      case 'module-5':
+        return <Module5 />;
+      case 'module-6':
+        return <Module6 />;
+      case 'module-7':
+        return <Module7 />;
+      case 'module-8':
+        return <Module8 />;
+      case 'module-9':
+        return <Module9 />;
+      case 'module-10':
+        return <Module10 />;
       default:
         return <Home />;
     }
