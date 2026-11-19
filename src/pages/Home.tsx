@@ -1,230 +1,117 @@
-import { AlertTriangle, BookOpen, Brain, Database, Shield } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { ArrowRight, BookOpen, FlaskConical, FileSearch, GraduationCap, Wrench, CheckCircle2 } from 'lucide-react';
+import { Link } from '@/components/Link';
+import { Card, CardBody, Badge } from '@/components/ui';
+import { MODULE_META as MODULES, PARTS, META_MAP as MODULE_MAP } from '@/content/meta';
+import { PASS_MARK, useProgress } from '@/store';
+import { BayesWidget } from '@/components/widgets/Foundations';
 
 export function Home() {
+  const quizzes = useProgress((s) => s.quizzes);
+  const mastered = MODULES.filter((m) => (quizzes[m.id]?.best ?? 0) >= PASS_MARK).length;
+  const next = MODULES.find((m) => (quizzes[m.id]?.best ?? 0) < PASS_MARK) ?? MODULES[0];
+  const totalMin = MODULES.reduce((s, m) => s + m.minutes, 0);
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Brain className="h-10 w-10 text-primary" />
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">
-              Welcome to MedML Studio
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Learn Interpretable Machine Learning for Clinical Decision Support
-            </p>
+    <div className="mx-auto max-w-5xl space-y-10">
+      <section className="space-y-4 pt-2">
+        <Badge tone="primary">Updated November 2026 · 10 modules · ~{Math.round(totalMin / 60)} hours</Badge>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Learn to build, judge and safely use clinical prediction models.</h1>
+        <p className="max-w-3xl text-lg text-muted-fg">
+          An interactive course for clinicians, trainees and informaticians. The models are real: logistic regression, trees, random forests, gradient boosting and neural nets
+          train in your browser on synthetic patients whose true risk is known. Every claim is linked to its primary source.
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link to={`/learn/${next.id}`} className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 font-medium text-primary-fg hover:opacity-90">
+            {mastered === 0 ? 'Start Module 1' : mastered === MODULES.length ? 'Review the course' : `Continue: Module ${next.number}`}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link to="/exam" className="inline-flex h-11 items-center gap-2 rounded-lg border bg-card px-5 font-medium hover:bg-muted">
+            Test yourself first
+          </Link>
+        </div>
+        <div className="max-w-md">
+          <div className="mb-1 flex justify-between text-sm">
+            <span className="text-muted-fg">Modules mastered (≥ 80% on the module quiz)</span>
+            <span className="num font-medium">
+              {mastered}/{MODULES.length}
+            </span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-good transition-all" style={{ width: `${(mastered / MODULES.length) * 100}%` }} />
           </div>
         </div>
-
-        {/* Safety Warning */}
-        <Card className="border-yellow-500/50 bg-yellow-500/10">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              <CardTitle className="text-lg">Educational Use Only</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              This platform uses <strong>synthetic datasets only</strong> and is designed exclusively
-              for educational purposes. It should <strong>never be used for actual clinical
-              decision-making</strong>. All models, predictions, and analyses are simulations
-              meant to teach ML concepts in a healthcare context.
-            </p>
-          </CardContent>
-        </Card>
       </section>
 
-      {/* Quick Start Cards */}
-      <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardHeader>
-            <Database className="h-8 w-8 text-primary mb-2" />
-            <CardTitle>Explore Datasets</CardTitle>
-            <CardDescription>
-              Browse synthetic clinical datasets simulating real-world scenarios like sepsis
-              risk and diabetes prediction
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" onClick={() => window.location.hash = 'datasets'}>
-              View Datasets
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardHeader>
-            <Brain className="h-8 w-8 text-primary mb-2" />
-            <CardTitle>Build Models</CardTitle>
-            <CardDescription>
-              Train and compare different ML models: logistic regression, decision trees,
-              random forests, and more
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" onClick={() => window.location.hash = 'model-lab'}>
-              Model Lab
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardHeader>
-            <BookOpen className="h-8 w-8 text-primary mb-2" />
-            <CardTitle>Learn Concepts</CardTitle>
-            <CardDescription>
-              Follow structured modules covering ML fundamentals, explainability tools,
-              and ethical considerations
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" onClick={() => window.location.hash = 'learning'}>
-              Start Learning
-            </Button>
-          </CardContent>
-        </Card>
+      <section aria-labelledby="try" className="space-y-2">
+        <h2 id="try" className="text-xl font-semibold">
+          Thirty seconds to see why this matters
+        </h2>
+        <BayesWidget />
       </section>
 
-      {/* Key Features */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-bold">What You'll Learn</h2>
+      <section aria-labelledby="path" className="space-y-4">
+        <h2 id="path" className="text-xl font-semibold">
+          The path
+        </h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Interpretable ML Models</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">Logistic Regression</Badge>
-                <Badge variant="secondary">Decision Trees</Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">Random Forests</Badge>
-                <Badge variant="secondary">Gradient Boosting</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Understand how different models make predictions and their clinical applicability
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Explainability Tools</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">SHAP Values</Badge>
-                <Badge variant="secondary">LIME</Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">Feature Importance</Badge>
-                <Badge variant="secondary">Calibration</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Learn to interpret and explain model predictions to clinical stakeholders
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Ethics & Fairness
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Critically evaluate bias, fairness, and ethical implications of ML models in
-                clinical settings. Understand regulatory considerations and trust frameworks.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Clinical Trust Assessment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Develop frameworks to assess when and whether to trust ML predictions in
-                clinical practice. Balance accuracy with explainability and safety.
-              </p>
-            </CardContent>
-          </Card>
+          {PARTS.map((part) => (
+            <Card key={part.title}>
+              <CardBody className="space-y-3">
+                <h3 className="font-semibold">{part.title}</h3>
+                <ol className="space-y-2">
+                  {part.modules.map((id) => {
+                    const m = MODULE_MAP[id];
+                    const done = (quizzes[id]?.best ?? 0) >= PASS_MARK;
+                    return (
+                      <li key={id}>
+                        <Link to={`/learn/${id}`} className="group flex items-start gap-3 rounded-lg p-2 hover:bg-muted">
+                          <span className={`num mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${done ? 'bg-good text-white' : 'bg-primary/10 text-primary'}`}>
+                            {done ? <CheckCircle2 className="h-4 w-4" /> : m.number}
+                          </span>
+                          <span>
+                            <span className="block text-sm font-medium group-hover:text-primary">{m.title}</span>
+                            <span className="block text-xs text-muted-fg">{m.minutes} min</span>
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </CardBody>
+            </Card>
+          ))}
         </div>
       </section>
 
-      {/* Learning Path */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-bold">Recommended Learning Path</h2>
-        <Card>
-          <CardContent className="pt-6">
-            <ol className="space-y-4">
-              <li className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-                  1
-                </span>
-                <div>
-                  <h3 className="font-semibold">Foundations of ML in Healthcare</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Learn what ML can and cannot do, prediction vs causation, and CDS categories
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-                  2
-                </span>
-                <div>
-                  <h3 className="font-semibold">Explore Synthetic Datasets</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Understand EHR data structure, preprocessing, and feature engineering
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-                  3
-                </span>
-                <div>
-                  <h3 className="font-semibold">Train & Compare Models</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Build interpretable models and understand accuracy vs interpretability tradeoffs
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-                  4
-                </span>
-                <div>
-                  <h3 className="font-semibold">Master Explainability Tools</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Use SHAP, LIME, and other tools to interpret model behavior
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-                  5
-                </span>
-                <div>
-                  <h3 className="font-semibold">Evaluate Bias & Fairness</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Identify potential biases and assess fairness across different populations
-                  </p>
-                </div>
-              </li>
-            </ol>
-          </CardContent>
-        </Card>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { to: '/lab', icon: FlaskConical, title: 'Labs', text: 'Train and compare six model families, explain them with exact SHAP, audit fairness, and deploy them to a shifted hospital.' },
+          { to: '/cases', icon: FileSearch, title: 'Case files', text: 'Ten documented real-world deployments, from the sepsis model that missed 67% of cases to autonomous retinopathy screening.' },
+          { to: '/toolkit', icon: Wrench, title: 'Appraisal toolkit', text: 'A 10-question appraisal checklist, a sample-size calculator and threshold tools you can use on the next paper or vendor pitch.' },
+          { to: '/exam', icon: GraduationCap, title: 'Mastery exam', text: '15 integrative case questions. Deferred feedback, with full rationales after you submit.' },
+        ].map(({ to, icon: Icon, title, text }) => (
+          <Link key={to} to={to} className="group rounded-xl border bg-card p-4 shadow-sm transition-colors hover:border-primary">
+            <Icon className="mb-2 h-5 w-5 text-primary" aria-hidden />
+            <div className="font-semibold group-hover:text-primary">{title}</div>
+            <p className="mt-1 text-sm text-muted-fg">{text}</p>
+          </Link>
+        ))}
+      </section>
+
+      <section className="rounded-xl border bg-muted/40 p-5 text-sm">
+        <h2 className="mb-2 flex items-center gap-2 font-semibold">
+          <BookOpen className="h-4 w-4" /> How the course works
+        </h2>
+        <ul className="grid gap-2 sm:grid-cols-3">
+          <li>
+            <strong>Concept, then experiment.</strong> Each idea comes with a live model you can manipulate.
+          </li>
+          <li>
+            <strong>Retrieval practice.</strong> Every module ends with case-based questions and explanations. You need 80% to master it.
+          </li>
+          <li>
+            <strong>Evidence first.</strong> Claims cite primary studies, guidelines and regulations current to November 2026.
+          </li>
+        </ul>
       </section>
     </div>
   );

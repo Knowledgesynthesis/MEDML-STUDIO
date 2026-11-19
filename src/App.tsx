@@ -1,106 +1,52 @@
-import { useEffect, useState } from 'react';
-import { Layout } from './components/layout/Layout';
-import { Home } from './pages/Home';
-import { Datasets } from './pages/Datasets';
-import { ModelLab } from './pages/ModelLab';
-import { Explainability } from './pages/Explainability';
-import { Learning } from './pages/Learning';
-import { Ethics } from './pages/Ethics';
-import { Glossary } from './pages/Glossary';
-import { CaseStudies } from './pages/CaseStudies';
-import { Module1, Module2, Module3, Module4, Module5, Module6, Module7, Module8, Module9, Module10 } from './pages/modules';
-import { useStore } from './store';
+import { lazy, Suspense } from 'react';
+import { Layout } from '@/components/layout/Layout';
+import { Loading } from '@/components/ui';
+import { useRoute } from '@/lib/router';
+import { Home } from '@/pages/Home';
 
-type Page = 'home' | 'datasets' | 'model-lab' | 'explainability' | 'learning' | 'ethics' | 'glossary' | 'case-studies' |
-  'module-1' | 'module-2' | 'module-3' | 'module-4' | 'module-5' |
-  'module-6' | 'module-7' | 'module-8' | 'module-9' | 'module-10';
+// Heavier pages are split into separate chunks so the home page loads fast on phones.
+const Learn = lazy(() => import('@/pages/Learn').then((m) => ({ default: m.Learn })));
+const ModulePage = lazy(() => import('@/pages/ModulePage').then((m) => ({ default: m.ModulePage })));
+const Labs = lazy(() => import('@/pages/Labs').then((m) => ({ default: m.Labs })));
+const Cases = lazy(() => import('@/pages/Cases').then((m) => ({ default: m.Cases })));
+const Toolkit = lazy(() => import('@/pages/Toolkit').then((m) => ({ default: m.Toolkit })));
+const Exam = lazy(() => import('@/pages/Misc').then((m) => ({ default: m.Exam })));
+const Glossary = lazy(() => import('@/pages/Misc').then((m) => ({ default: m.Glossary })));
+const References = lazy(() => import('@/pages/Misc').then((m) => ({ default: m.References })));
+const NotFoundPage = lazy(() => import('@/pages/Misc').then((m) => ({ default: m.NotFoundPage })));
 
-function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('home');
-  const initialize = useStore((state) => state.initialize);
+function Page({ seg }: { seg: string[] }) {
+  const [a, b] = seg;
+  switch (a) {
+    case undefined:
+      return <Home />;
+    case 'learn':
+      return b ? <ModulePage key={b} id={b} /> : <Learn />;
+    case 'lab':
+      return <Labs tab={b ?? ''} />;
+    case 'cases':
+      return <Cases />;
+    case 'toolkit':
+      return <Toolkit />;
+    case 'exam':
+      return <Exam />;
+    case 'glossary':
+      return <Glossary />;
+    case 'references':
+      return <References />;
+    default:
+      return <NotFoundPage />;
+  }
+}
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  // Simple routing handler
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      if (hash === 'datasets') setCurrentPage('datasets');
-      else if (hash === 'model-lab') setCurrentPage('model-lab');
-      else if (hash === 'explainability') setCurrentPage('explainability');
-      else if (hash === 'learning') setCurrentPage('learning');
-      else if (hash === 'ethics') setCurrentPage('ethics');
-      else if (hash === 'glossary') setCurrentPage('glossary');
-      else if (hash === 'case-studies') setCurrentPage('case-studies');
-      else if (hash === 'module-1') setCurrentPage('module-1');
-      else if (hash === 'module-2') setCurrentPage('module-2');
-      else if (hash === 'module-3') setCurrentPage('module-3');
-      else if (hash === 'module-4') setCurrentPage('module-4');
-      else if (hash === 'module-5') setCurrentPage('module-5');
-      else if (hash === 'module-6') setCurrentPage('module-6');
-      else if (hash === 'module-7') setCurrentPage('module-7');
-      else if (hash === 'module-8') setCurrentPage('module-8');
-      else if (hash === 'module-9') setCurrentPage('module-9');
-      else if (hash === 'module-10') setCurrentPage('module-10');
-      else setCurrentPage('home');
-
-      // Scroll to top of page on navigation
-      window.scrollTo(0, 0);
-    };
-
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'datasets':
-        return <Datasets />;
-      case 'model-lab':
-        return <ModelLab />;
-      case 'explainability':
-        return <Explainability />;
-      case 'learning':
-        return <Learning />;
-      case 'ethics':
-        return <Ethics />;
-      case 'glossary':
-        return <Glossary />;
-      case 'case-studies':
-        return <CaseStudies />;
-      case 'module-1':
-        return <Module1 />;
-      case 'module-2':
-        return <Module2 />;
-      case 'module-3':
-        return <Module3 />;
-      case 'module-4':
-        return <Module4 />;
-      case 'module-5':
-        return <Module5 />;
-      case 'module-6':
-        return <Module6 />;
-      case 'module-7':
-        return <Module7 />;
-      case 'module-8':
-        return <Module8 />;
-      case 'module-9':
-        return <Module9 />;
-      case 'module-10':
-        return <Module10 />;
-      default:
-        return <Home />;
-    }
-  };
-
+export default function App() {
+  const seg = useRoute();
+  const path = `/${seg.join('/')}`;
   return (
-    <Layout>
-      {renderPage()}
+    <Layout path={path}>
+      <Suspense fallback={<Loading label="Loading…" />}>
+        <Page key={path} seg={seg} />
+      </Suspense>
     </Layout>
   );
 }
-
-export default App;

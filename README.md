@@ -1,335 +1,80 @@
 # MedML Studio
 
-**Interpretable Machine Learning for Clinical Decision Support**
+An interactive, evidence-based course on **clinical prediction models and interpretable machine learning**, for clinicians, trainees and informaticians.
 
-An educational platform designed to teach clinicians how to understand, interpret, and critically evaluate machine learning models in clinical contexts.
+Real models (logistic regression, CART, random forests, gradient boosting, a neural network) train in the browser on synthetic patients whose **true risk is known**, so every lesson can show what a model recovered against what was actually true. Every factual claim links to its primary source (DOI or official page). Content is current to **November 2026**.
 
----
+## What's inside
 
-## Overview
+| Area | Contents |
+| --- | --- |
+| **Course** (10 modules, ~5 h) | Prediction vs causation · data, leakage and sample size · logistic regression done well · trees, ensembles and neural nets · discrimination and thresholds · calibration · net benefit and impact evidence · SHAP, LIME, PDP/ICE and their limits · bias and fairness · deployment, monitoring, appraisal and regulation |
+| **Labs** | 20 interactive widgets: Bayes/PPV, logistic link, target leakage, informative missingness, Riley sample size, odds-ratio forest plot, non-linearity, tree depth vs overfitting, six-model comparison, threshold explorer, calibration and recalibration, class-imbalance harm, decision curves, exact SHAP, LIME stability, PDP/ICE, three importance measures, group fairness audit, label-choice bias (Obermeyer mechanism), dataset shift and model updating |
+| **Case files** | 10 documented real-world deployments (e.g. external validation of a proprietary sepsis model, TREWS, Kaiser AAM, Obermeyer 2019, pulse oximetry, shortcut learning in radiographs, autonomous retinopathy screening), each ending with a decision for the learner |
+| **Assessment** | 50 module questions with explanatory feedback (mastery = 80%), 10 case decisions, and a 15-item integrative exam with deferred feedback. Option order is shuffled deterministically so answer position carries no cue. |
+| **Toolkit** | 10-question appraisal checklist (TRIPOD+AI / PROBAST+AI), sample-size calculator, threshold and net-benefit calculators, vendor question list |
+| **Reference** | 63-term glossary linked to modules; 87 references with DOIs |
 
-MedML Studio is a mobile-first, offline-capable educational application that provides an interactive sandbox for learning about interpretable machine learning in healthcare. Built with safety and transparency at its core, it uses only synthetic datasets and emphasizes ethical considerations, explainability, and clinical appropriateness.
+## Synthetic data
 
-### Key Features
+| Cohort | Population and outcome | Built-in teaching features |
+| --- | --- | --- |
+| ED sepsis (n = 2,400) | ED adults with suspected infection → Sepsis-3 within 48 h | U-shaped temperature and WBC effects, log-linear lactate, informative lactate missingness, an unmeasured risk factor, a leakage variable (antibiotic orders) |
+| Incident type 2 diabetes (n = 2,400) | Primary care, no diabetes at baseline → ADA diagnosis within 5 years | Two population groups with different base rates, optional HbA1c measurement bias |
+| Care management (n = 4,000) | Cost versus health-need labels | Reproduces the label-choice mechanism of Obermeyer et al. (Science 2019) |
 
-- **Synthetic Datasets**: Realistic clinical scenarios (sepsis risk, diabetes prediction) using synthetic data
-- **Interactive ML Models**: Train and compare logistic regression, decision trees, and more
-- **Explainability Tools**: Feature importance, SHAP, LIME, calibration curves
-- **Dark Mode**: Beautiful, accessible UI with dark mode support
-- **Offline-Ready**: Progressive Web App (PWA) with offline capabilities
-- **Educational First**: Structured learning paths with safety disclaimers
+All generators are seeded, so every user sees identical numbers.
 
----
+## Engineering
 
-## Technology Stack
+- **Stack:** React 19, TypeScript 6, Vite 8, Tailwind CSS 4, Zustand 5, vite-plugin-pwa (installable, works offline). Charts are dependency-free responsive SVG.
+- **ML engine** (`src/lib/ml`), written from scratch with no ML dependencies:
+  - logistic regression by Newton–Raphson/IRLS with ridge penalty and Wald CIs;
+  - CART (Gini), random forest (bootstrap + √p features), gradient boosting with second-order leaves, and a one-hidden-layer MLP trained with Adam;
+  - AUROC with tie handling, ROC/PR curves, Brier and scaled Brier, calibration intercept and slope, logistic recalibration, net benefit and decision curves, bootstrap CIs;
+  - exact interventional Shapley values (all 2ᵖ coalitions), LIME (quartile discretisation, exponential kernel), PDP/ICE, permutation importance;
+  - Riley et al. (BMJ 2020) sample-size criteria with Cox–Snell R² derived from a C-statistic.
+- **Preprocessing** is fitted on training data only (median imputation + missing indicators, standardisation). Evaluation always uses a held-out stratified 30% test set.
 
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS (with custom theming)
-- **UI Components**: Custom components inspired by shadcn/ui
-- **State Management**: Zustand with persistence
-- **Visualizations**: Recharts + D3.js
-- **ML Implementation**: Custom TypeScript implementations
-- **Offline Support**: Vite PWA plugin + IndexedDB
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Installation
+## Quality checks
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+npm run dev        # http://localhost:5173
+npm test           # 44 unit and content-integrity tests
+npm run lint
+npm run build      # type-check + production build to dist/
 ```
 
-The app will be available at `http://localhost:5173`
+The tests cover:
+- metric correctness: hand-computed AUROC with ties, ROC-area equivalence, prevalence invariance, net benefit, calibration recovery;
+- model behaviour: recovery of known LR coefficients, monotone boosting loss, tree splits;
+- SHAP axioms: efficiency, dummy, and the closed form for additive LR;
+- LIME seed sensitivity;
+- an exact reproduction of the Riley et al. BMJ 2020 worked example (623 / 662 / 221);
+- dataset properties: informative missingness, no prevalent diabetes, label-bias direction;
+- content integrity: every citation resolves, every quiz answer index is valid, navigation metadata matches the modules, answer positions are balanced.
 
----
+Before release, every route was also crawled at desktop and phone width with Playwright (no console errors, no horizontal overflow) and scanned with axe-core for WCAG 2.2 AA in light and dark themes.
 
-## Project Structure
+## Project structure
 
 ```
-MEDML-STUDIO/
-├── src/
-│   ├── components/
-│   │   ├── ui/              # Reusable UI components (Button, Card, etc.)
-│   │   ├── layout/          # Layout components (Header, Sidebar)
-│   │   ├── interactive/     # Interactive learning components
-│   │   └── visualizations/  # ML visualization components
-│   ├── lib/
-│   │   ├── ml/              # ML model implementations
-│   │   ├── utils/           # Utility functions
-│   │   └── data/            # Data generation and management
-│   ├── store/               # Zustand state management
-│   ├── types/               # TypeScript type definitions
-│   ├── pages/               # Main application pages
-│   ├── hooks/               # Custom React hooks
-│   ├── assets/              # Static assets
-│   ├── data/                # Data schemas and content
-│   │   ├── datasets/        # Synthetic dataset definitions
-│   │   └── schemas/         # JSON schemas
-│   ├── content/             # Educational content
-│   │   ├── modules/         # Learning modules
-│   │   ├── glossary/        # Term definitions
-│   │   └── assessments/     # Quizzes and assessments
-│   ├── App.tsx              # Main App component
-│   ├── main.tsx             # Application entry point
-│   └── index.css            # Global styles
-├── public/                  # Static public assets
-├── index.html               # HTML entry point
-├── package.json             # Dependencies and scripts
-├── tsconfig.json            # TypeScript configuration
-├── vite.config.ts           # Vite configuration
-├── tailwind.config.js       # Tailwind CSS configuration
-└── README.md                # This file
+src/
+  lib/ml/          models, metrics, explainers, fairness, sample size (+ tests)
+  lib/data/        seeded synthetic cohorts with known data-generating processes
+  lib/lab.ts       shared cohort/model cache and async compute hook
+  components/      UI primitives, SVG charts, quiz and citation components, widgets
+  content/         modules (m1–m10), cases, exam, glossary, references
+  pages/           Home, Course, Module, Labs, Case files, Toolkit, Exam, Glossary, References
 ```
 
----
+Routing is hash-based (`#/learn/m3`), so the build runs on any static host. Old v1 links such as `#module-3` and `#datasets` redirect to the new pages.
 
-## Key Concepts
+## Scope
 
-### Educational Use Only
+All patient data are synthetic. The app teaches how to build, evaluate and appraise prediction models. It is not a clinical decision tool.
 
-**CRITICAL**: This platform uses synthetic datasets only and is designed exclusively for educational purposes. It should **never be used for actual clinical decision-making**.
+## Author
 
-### Synthetic Datasets
-
-All datasets are programmatically generated to simulate realistic clinical scenarios while containing no real patient data:
-
-- **Sepsis Risk**: Vital signs and lab values for sepsis screening
-- **Diabetes Risk**: BMI, glucose levels, and lifestyle factors
-
-### ML Models Implemented
-
-1. **Logistic Regression**: Linear, highly interpretable baseline model
-2. **Decision Trees**: Rule-based models with visual interpretation
-3. **Random Forests**: (Planned) Ensemble of decision trees
-4. **Gradient Boosting**: (Planned) Advanced ensemble method
-
-### Explainability Features
-
-- **Feature Importance**: Global understanding of variable impact
-- **SHAP Values**: (Planned) Unified approach to explainability
-- **LIME**: (Planned) Local interpretable model-agnostic explanations
-- **Calibration Curves**: Model probability calibration
-- **Confusion Matrices**: Classification performance breakdown
-
----
-
-## Learning Path
-
-The recommended learning progression:
-
-1. **Foundations of ML in Healthcare**
-   - What ML can and cannot do
-   - Prediction vs causation in medicine
-   - Clinical decision support categories
-
-2. **Explore Synthetic Datasets**
-   - Understanding EHR data structure
-   - Feature engineering for clinical data
-   - Outcome variable definitions
-
-3. **Train & Compare Models**
-   - Building interpretable models
-   - Accuracy vs interpretability tradeoffs
-   - Model selection for clinical contexts
-
-4. **Master Explainability Tools**
-   - Feature importance interpretation
-   - Local vs global explanations
-   - Communicating model behavior to stakeholders
-
-5. **Evaluate Bias & Fairness**
-   - Identifying potential biases
-   - Fairness metrics and considerations
-   - Ethical implications of ML in healthcare
-
----
-
-## Development
-
-### Adding New Datasets
-
-Create a new generator function in `src/lib/data/synthetic-generator.ts`:
-
-```typescript
-export function generateNewDataset(size: number = 500): SyntheticDataset {
-  // Define features
-  const features: Feature[] = [...];
-
-  // Generate data points
-  const data: SyntheticDataPoint[] = [];
-
-  // Return dataset
-  return { ... };
-}
-```
-
-### Adding New Models
-
-Implement the model class in `src/lib/ml/`:
-
-```typescript
-export class NewModel {
-  fit(data: SyntheticDataPoint[], featureNames: string[]): void {
-    // Training logic
-  }
-
-  predict(dataPoint: SyntheticDataPoint): Prediction {
-    // Prediction logic
-  }
-
-  getFeatureImportance(): FeatureImportance[] {
-    // Feature importance calculation
-  }
-}
-```
-
-### Adding New Pages
-
-1. Create component in `src/pages/`
-2. Add route to `src/App.tsx`
-3. Add navigation item to `src/components/layout/Sidebar.tsx`
-
----
-
-## Offline Support
-
-The application is configured as a Progressive Web App (PWA):
-
-- **Service Worker**: Automatically caches assets for offline use
-- **IndexedDB**: Stores user progress and trained models locally
-- **Manifest**: Enables "Add to Home Screen" on mobile devices
-
----
-
-## Accessibility
-
-MedML Studio aims for WCAG 2.2 AA compliance:
-
-- Semantic HTML structure
-- ARIA labels for interactive elements
-- Keyboard navigation support
-- Sufficient color contrast in both light and dark modes
-- Responsive design for all screen sizes
-
----
-
-## Safety & Ethics
-
-### Safety Disclaimers
-
-All pages include prominent disclaimers that this is an educational tool only. Users are reminded:
-
-- All datasets are synthetic
-- No real patient data is used
-- Not suitable for clinical decision-making
-- Educational purposes only
-
-### Ethical Considerations
-
-The platform emphasizes:
-
-- **Transparency**: Clear explanation of how models work
-- **Accountability**: Understanding model limitations
-- **Fairness**: Detecting and addressing bias
-- **Clinical Appropriateness**: When to use (or not use) ML
-- **Regulatory Awareness**: FDA, AMA, EU AI Act principles
-
----
-
-## Regulatory Alignment
-
-Content is aligned with:
-
-- **FDA SaMD Guidelines**: Software as a Medical Device considerations
-- **AMA AI Guidelines**: American Medical Association AI principles
-- **EU AI Act**: High-risk AI system requirements
-- **PROBAST-AI**: Prediction model risk of bias assessment
-
----
-
-## Future Enhancements
-
-- [ ] Additional ML models (Random Forest, Gradient Boosting, Neural Networks)
-- [ ] SHAP and LIME implementations
-- [ ] Interactive decision boundary visualizations
-- [ ] Calibration plot interactives
-- [ ] Bias and fairness analysis tools
-- [ ] Clinical case studies with guided analysis
-- [ ] Assessment system with progress tracking
-- [ ] Export model reports
-- [ ] Multi-language support
-- [ ] Enhanced mobile experience
-
----
-
-## Contributing
-
-This is an educational project. Contributions that enhance:
-
-- Educational content accuracy
-- Clinical ML best practices
-- Accessibility features
-- Explainability tools
-
-are welcome.
-
----
-
-## License
-
-This project is for educational purposes. Please ensure any use maintains the educational and safety-first approach.
-
----
-
-## Acknowledgments
-
-Inspired by:
-
-- Evidence-based medicine principles
-- FDA guidance on AI/ML in medical devices
-- AMA's ethical guidelines for AI in healthcare
-- Clinical informatics best practices
-- Open-source educational resources
-
----
-
-## Support
-
-For questions or issues:
-
-1. Check the in-app glossary
-2. Review the learning modules
-3. Consult the source code documentation
-
----
-
-## Citation
-
-If you use this educational platform in your research or teaching:
-
-```
-MedML Studio: Interpretable Machine Learning for Clinical Decision Support
-Educational Platform, 2024
-```
-
----
-
-**Remember**: This is an educational tool. Always consult with clinical experts and follow institutional guidelines for real-world ML implementation in healthcare.
+Built by Bashar Hasan, MD.
