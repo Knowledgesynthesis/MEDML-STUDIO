@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Slider, Segmented, Stat, Loading, Legend, Toggle, Callout } from '@/components/ui';
-import { Chart, Line, Dots, VLine, Diagonal, Bars, histogram } from '@/components/chart/Chart';
+import { Chart, Line, Dots, VLine, Diagonal, Bars } from '@/components/chart/Chart';
+import { histogram } from '@/lib/hist';
 import { WidgetFrame } from './Frame';
 import { fx, pct, cn } from '@/lib/utils';
 import { getCohort, getPreds, useComputed, STANDARD_SPECS } from '@/lib/lab';
 import { fitModel, MODEL_INFO, type ModelKind, type ModelSpec } from '@/lib/ml/pipeline';
 import { auroc, calibrationCurve, calibrationStats, classificationStats, decisionCurve, prCurve, recalibrator, rocCurve, brier } from '@/lib/ml/metrics';
 import { Rng, mean } from '@/lib/ml/stats';
-import { KIND_COLOR } from './ModelWidgets';
+import { KIND_COLOR } from '@/lib/colors';
 
 /* ───────────── Threshold explorer ───────────── */
 

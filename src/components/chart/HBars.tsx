@@ -45,6 +45,19 @@ export function HBars({
   );
 }
 
+function WaterfallRow({ label, detail, children, value, strong }: { label: ReactNode; detail?: ReactNode; children: ReactNode; value: string; strong?: boolean }) {
+  return (
+    <div className="grid grid-cols-[minmax(0,9.5rem)_1fr_4.6rem] items-center gap-2 text-sm sm:grid-cols-[minmax(0,13rem)_1fr_5rem]">
+      <div className={cn('min-w-0', strong && 'font-semibold')}>
+        <div className="truncate">{label}</div>
+        {detail && <div className="truncate text-xs text-muted-fg">{detail}</div>}
+      </div>
+      <div className="relative h-6 rounded bg-muted">{children}</div>
+      <div className={cn('num text-right font-mono text-xs', strong && 'font-semibold')}>{value}</div>
+    </div>
+  );
+}
+
 /** SHAP-style waterfall: starts at the base value, each feature moves the running total, ends at f(x). */
 export function Waterfall({
   base,
@@ -62,12 +75,10 @@ export function Waterfall({
   outLabel?: string;
 }) {
   const sorted = items.slice().sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
-  let run = base;
-  const steps = sorted.map((it) => {
-    const start = run;
-    run += it.value;
-    return { ...it, start, end: run };
-  });
+  const steps = sorted.reduce<{ label: ReactNode; detail?: ReactNode; value: number; start: number; end: number }[]>((acc, it) => {
+    const start = acc.length ? acc[acc.length - 1].end : base;
+    return [...acc, { ...it, start, end: start + it.value }];
+  }, []);
   const all = [base, fx, ...steps.flatMap((s) => [s.start, s.end])];
   const lo = Math.min(...all);
   const hi = Math.max(...all);
@@ -75,33 +86,23 @@ export function Waterfall({
   const L = lo - pad;
   const span = hi + pad - L;
   const pos = (v: number) => ((v - L) / span) * 100;
-  const Row = ({ label, detail, children, value, strong }: { label: ReactNode; detail?: ReactNode; children: ReactNode; value: string; strong?: boolean }) => (
-    <div className="grid grid-cols-[minmax(0,9.5rem)_1fr_4.6rem] items-center gap-2 text-sm sm:grid-cols-[minmax(0,13rem)_1fr_5rem]">
-      <div className={cn('min-w-0', strong && 'font-semibold')}>
-        <div className="truncate">{label}</div>
-        {detail && <div className="truncate text-xs text-muted-fg">{detail}</div>}
-      </div>
-      <div className="relative h-6 rounded bg-muted">{children}</div>
-      <div className={cn('num text-right font-mono text-xs', strong && 'font-semibold')}>{value}</div>
-    </div>
-  );
   return (
     <div className="space-y-1.5">
-      <Row label={baseLabel} value={format(base)} strong>
+      <WaterfallRow label={baseLabel} value={format(base)} strong>
         <div className="absolute inset-y-0 w-0.5 bg-fg" style={{ left: `${pos(base)}%` }} />
-      </Row>
+      </WaterfallRow>
       {steps.map((s, i) => {
         const a = pos(Math.min(s.start, s.end));
         const b = pos(Math.max(s.start, s.end));
         return (
-          <Row key={i} label={s.label} detail={s.detail} value={`${s.value >= 0 ? '+' : '−'}${format(Math.abs(s.value))}`}>
+          <WaterfallRow key={i} label={s.label} detail={s.detail} value={`${s.value >= 0 ? '+' : '−'}${format(Math.abs(s.value))}`}>
             <div className="absolute inset-y-1 rounded-sm" style={{ left: `${a}%`, width: `${Math.max(0.6, b - a)}%`, background: s.value >= 0 ? 'var(--c2)' : 'var(--c1)' }} />
-          </Row>
+          </WaterfallRow>
         );
       })}
-      <Row label={outLabel} value={format(fx)} strong>
+      <WaterfallRow label={outLabel} value={format(fx)} strong>
         <div className="absolute inset-y-0 w-0.5 bg-fg" style={{ left: `${pos(fx)}%` }} />
-      </Row>
+      </WaterfallRow>
       <div className="flex gap-4 pt-1 text-xs text-muted-fg">
         <span className="inline-flex items-center gap-1">
           <span className="h-2.5 w-2.5 rounded-sm" style={{ background: 'var(--c2)' }} /> pushes risk up

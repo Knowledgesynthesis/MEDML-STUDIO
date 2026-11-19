@@ -3,6 +3,7 @@ import { CheckCircle2, XCircle, RotateCcw, Trophy } from 'lucide-react';
 import { Button, Card, CardBody, Badge } from '@/components/ui';
 import { PASS_MARK, useProgress } from '@/store';
 import { cn } from '@/lib/utils';
+import { optionOrder } from '@/lib/optionOrder';
 
 export interface Question {
   id: string;
@@ -73,7 +74,8 @@ export function Quiz({ id, questions, mode = 'practice', title = 'Check your und
                 <div>{q.stem}</div>
               </div>
               <div className="grid gap-2" role="radiogroup" aria-label={`Question ${qi + 1}`}>
-                {q.options.map((opt, i) => {
+                {optionOrder(q.id, q.options.length).map((i, pos) => {
+                  const opt = q.options[i];
                   const isChosen = chosen === i;
                   const isRight = q.answer === i;
                   return (
@@ -92,7 +94,7 @@ export function Quiz({ id, questions, mode = 'practice', title = 'Check your und
                         isAnswered && !isChosen && !(reveal && isRight) && 'opacity-60',
                       )}
                     >
-                      <span className="mt-0.5 font-mono text-xs text-muted-fg">{String.fromCharCode(65 + i)}</span>
+                      <span className="mt-0.5 font-mono text-xs text-muted-fg">{String.fromCharCode(65 + pos)}</span>
                       <span className="flex-1">{opt}</span>
                       {isAnswered && reveal && isRight && <CheckCircle2 className="h-4 w-4 shrink-0 text-good" aria-label="correct" />}
                       {isAnswered && reveal && isChosen && !isRight && <XCircle className="h-4 w-4 shrink-0 text-bad" aria-label="incorrect" />}

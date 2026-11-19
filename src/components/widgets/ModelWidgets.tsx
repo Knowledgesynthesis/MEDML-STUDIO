@@ -7,6 +7,7 @@ import { getCohort, getModel, getPreds, useComputed, STANDARD_SPECS } from '@/li
 import { MODEL_INFO, oddsRatios, type FittedModel, type ModelKind } from '@/lib/ml/pipeline';
 import { auroc, rocCurve, calibrationCurve, summarize } from '@/lib/ml/metrics';
 import { DecisionTree, LogisticRegression, type TreeNode } from '@/lib/ml/models';
+import { KIND_COLOR } from '@/lib/colors';
 import { linspace, logit, quantile } from '@/lib/ml/stats';
 import type { DatasetId } from '@/lib/data/datasets';
 
@@ -261,14 +262,6 @@ export function TreeDepthWidget() {
 /* ───────────── Head-to-head model comparison ───────────── */
 
 const ALL_KINDS: ModelKind[] = ['logistic', 'logistic_quadratic', 'tree', 'forest', 'boosting', 'mlp'];
-export const KIND_COLOR: Record<ModelKind, string> = {
-  logistic: 'var(--c1)',
-  logistic_quadratic: 'var(--c3)',
-  tree: 'var(--c5)',
-  forest: 'var(--c4)',
-  boosting: 'var(--c2)',
-  mlp: 'var(--bad)',
-};
 
 export function ModelComparisonWidget({ initial = 'sepsis' as DatasetId, compact = false }: { initial?: DatasetId; compact?: boolean }) {
   const [ds, setDs] = useState<DatasetId>(initial);

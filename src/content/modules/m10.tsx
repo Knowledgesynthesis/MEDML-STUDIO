@@ -1,6 +1,6 @@
 import { Callout } from '@/components/ui';
 import { Cite } from '@/components/learn/Cite';
-import { Link } from '@/lib/router';
+import { Link } from '@/components/Link';
 import { ShiftWidget } from '@/components/widgets/DeployWidgets';
 import type { ModuleDef } from './types';
 

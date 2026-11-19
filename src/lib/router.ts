@@ -1,4 +1,4 @@
-import { useEffect, useState, type AnchorHTMLAttributes } from 'react';
+import { useEffect, useState } from 'react';
 
 /** Hash routes work on any static host (Vercel, GitHub Pages, file://) and offline as a PWA. */
 const LEGACY: Record<string, string> = {
@@ -11,7 +11,7 @@ const LEGACY: Record<string, string> = {
   'case-studies': '/cases',
 };
 
-export function currentPath(): string {
+function currentPath(): string {
   const raw = window.location.hash.replace(/^#/, '');
   if (!raw) return '/';
   if (LEGACY[raw]) return LEGACY[raw];
@@ -19,10 +19,6 @@ export function currentPath(): string {
   if (m) return `/learn/m${m[1]}`;
   const [path] = raw.split('?');
   return path.startsWith('/') ? path : `/${path}`;
-}
-
-export function navigate(path: string) {
-  window.location.hash = path;
 }
 
 export function useRoute(): string[] {
@@ -36,8 +32,4 @@ export function useRoute(): string[] {
     return () => window.removeEventListener('hashchange', onChange);
   }, []);
   return path.split('/').filter(Boolean);
-}
-
-export function Link({ to, ...rest }: { to: string } & AnchorHTMLAttributes<HTMLAnchorElement>) {
-  return <a href={`#${to}`} {...rest} />;
 }

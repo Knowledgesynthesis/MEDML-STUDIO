@@ -13,7 +13,7 @@ import type { DatasetId } from '@/lib/data/datasets';
 
 const EXPLAIN_KINDS: ModelKind[] = ['logistic_quadratic', 'forest', 'boosting'];
 
-export function formatValue(c: Cohort, j: number, v: number): string {
+function formatValue(c: Cohort, j: number, v: number): string {
   const f = c.ds.features[j];
   if (Number.isNaN(v)) return `${f.label}: not measured`;
   if (f.type === 'binary') return `${f.label}: ${v ? 'yes' : 'no'}`;
