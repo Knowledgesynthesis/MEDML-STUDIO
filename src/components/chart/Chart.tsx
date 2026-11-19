@@ -24,7 +24,7 @@ function niceTicks(lo: number, hi: number, count = 5): number[] {
 
 function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
   const ref = useRef<T>(null);
-  const [w, setW] = useState(560);
+  const [w, setW] = useState(320);
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -75,8 +75,8 @@ export function Chart({ x, y, xLabel, yLabel, xTicks, yTicks, xFormat, yFormat, 
   const fY = yFormat ?? ((v: number) => String(v));
   const s: Scales = { x: sx, y: sy, width, height, left, top, innerW, innerH };
   return (
-    <div ref={ref} className="w-full">
-      <svg width={width} height={height} role="img" aria-label={ariaLabel} className="block overflow-visible text-fg">
+    <div ref={ref} className="w-full min-w-0">
+      <svg width={width} height={height} role="img" aria-label={ariaLabel} className="block max-w-full overflow-visible text-fg">
         <title>{ariaLabel}</title>
         <g>
           {yt.map((t) => (

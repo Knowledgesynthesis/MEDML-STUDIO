@@ -158,6 +158,17 @@ describe('calibration & overall performance', () => {
     const low = lp.map((v) => sigmoid(v - 1));
     expect(calibrationStats(low, y).intercept).toBeCloseTo(1, 1);
   });
+  it('stays finite and sensible for degenerate 0/1 predictions (regression: deep-tree slope was −4e11)', () => {
+    const r = new Rng(12);
+    const yy = Array.from({ length: 600 }, () => r.bernoulli(0.2));
+    // a 'memorising' model: mostly 0/1 probabilities, right only 70% of the time
+    const pp = yy.map((v) => (r.next() < 0.5 ? (r.next() < 0.7 ? v : 1 - v) : 0.2 + 0.1 * r.normal()));
+    const c = calibrationStats(pp.map((v) => Math.min(1, Math.max(0, v))), yy);
+    expect(Number.isFinite(c.slope)).toBe(true);
+    expect(c.slope).toBeGreaterThan(0);
+    expect(c.slope).toBeLessThan(1);
+    expect(Number.isFinite(c.intercept)).toBe(true);
+  });
   it('calibration curve bins cover all patients and observed≈predicted for true risks', () => {
     const bins = calibrationCurve(truth, y, 10);
     expect(bins.reduce((s, b) => s + b.n, 0)).toBe(truth.length);

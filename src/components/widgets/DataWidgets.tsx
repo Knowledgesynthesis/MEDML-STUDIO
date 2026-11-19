@@ -4,58 +4,60 @@ import { HBars } from '@/components/chart/HBars';
 import { WidgetFrame } from './Frame';
 import { fx, pct } from '@/lib/utils';
 import { getCohort, getModel, useComputed, STANDARD_SPECS } from '@/lib/lab';
-import { fitModel, oddsRatios, pick } from '@/lib/ml/pipeline';
+import { fitModel, oddsRatios } from '@/lib/ml/pipeline';
 import { auroc, calibrationStats } from '@/lib/ml/metrics';
 import { rileySampleSize } from '@/lib/ml/samplesize';
 import type { FeatureMeta } from '@/lib/ml/preprocess';
 
-/** Target leakage: a predictor recorded after the prediction time looks brilliant retrospectively and fails prospectively. */
+/** Target leakage: a predictor recorded after the prediction time looks brilliant retrospectively and adds nothing prospectively. */
 export function LeakageWidget() {
   const r = useComputed(() => {
     const c = getCohort('sepsis');
     const abx = c.ds.extra.abxAny;
     const abxT0 = c.ds.extra.abxAtT0;
     const meta: FeatureMeta[] = [...c.ds.features, { key: 'abx', label: 'IV antibiotics ordered', type: 'binary', description: 'Any time during the encounter' }];
-    const add = (rows: number[][], idx: number[], col: number[]) => rows.map((row, i) => [...row, col[idx[i]]]);
-    const XtrLeak = add(c.Xtr, c.train, abx);
+    const rows = (idx: number[], col: number[]) => idx.map((i) => [...c.ds.X[i], col[i]]);
     const clean = getModel('sepsis', STANDARD_SPECS.logistic_quadratic);
-    const leaky = fitModel(STANDARD_SPECS.logistic_quadratic, meta, XtrLeak, c.ytr);
-    const pClean = clean.predict(c.Xte);
-    const pRetro = leaky.predict(add(c.Xte, c.test, abx));
-    const pReal = leaky.predict(add(c.Xte, c.test, abxT0));
+    const leaky = fitModel(STANDARD_SPECS.logistic_quadratic, meta, rows(c.train, abx), c.ytr);
+    // the decision that matters: patients clinicians have not yet recognised at triage
+    const unrec = c.test.filter((i) => abxT0[i] === 0);
+    const yU = unrec.map((i) => c.ds.y[i]);
+    const pClean = clean.predict(unrec.map((i) => c.ds.X[i]));
+    const pLeak = leaky.predict(rows(unrec, abxT0));
     const orAbx = oddsRatios(leaky).find((o) => o.column.name === 'abx');
     return {
-      clean: auroc(pClean, c.yte),
-      retro: auroc(pRetro, c.yte),
-      real: auroc(pReal, c.yte),
-      realCal: calibrationStats(pReal, c.yte),
-      meanReal: pReal.reduce((s, v) => s + v, 0) / pReal.length,
-      prev: c.yte.reduce((s, v) => s + v, 0) / c.yte.length,
+      retro: auroc(leaky.predict(rows(c.test, abx)), c.yte),
+      cleanU: auroc(pClean, yU),
+      leakU: auroc(pLeak, yU),
+      leakCal: calibrationStats(pLeak, yU),
+      meanLeak: pLeak.reduce((s, v) => s + v, 0) / pLeak.length,
+      prevU: yU.reduce((s, v) => s + v, 0) / yU.length,
+      nU: unrec.length,
       or: orAbx?.or ?? NaN,
-      fracBefore: pick(abxT0, c.test).filter(Boolean).length / Math.max(1, pick(abx, c.test).filter(Boolean).length),
     };
   }, ['leak']);
   return (
     <WidgetFrame title="Target leakage: the antibiotic-order shortcut">
       <p className="text-sm">
-        Suppose the training extract includes “IV antibiotics ordered during the encounter”. Antibiotics are usually ordered <em>after</em> clinicians already suspect sepsis, so
-        this feature encodes the answer. At triage, the time the model is meant to run, most of those orders do not yet exist.
+        Suppose the training extract includes “IV antibiotics ordered during the encounter”. Antibiotics are usually ordered <em>after</em> clinicians already suspect sepsis,
+        so this feature partly encodes the answer. The model is meant to help at triage, for patients whom clinicians have <em>not yet</em> recognised.
       </p>
       {!r ? (
         <Loading />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Stat label="Model without the leaked feature" value={fx(r.clean, 3)} sub="AUROC, held-out patients" />
-            <Stat label="With leak, retrospective validation" value={fx(r.retro, 3)} sub={`looks excellent (OR ≈ ${fx(r.or, 0)})`} tone="good" />
-            <Stat label="With leak, at triage (deployment)" value={fx(r.real, 3)} sub={`only ${pct(r.fracBefore)} of orders exist at triage`} tone="bad" />
+            <Stat label="Leaky model, retrospective validation" value={fx(r.retro, 3)} sub={`AUROC on all test patients (antibiotic OR ≈ ${fx(r.or, 0)})`} tone="good" />
+            <Stat label="Leaky model at triage, not-yet-recognised patients" value={fx(r.leakU, 3)} sub={`AUROC, n = ${r.nU}`} tone="bad" />
+            <Stat label="Clean model, same patients" value={fx(r.cleanU, 3)} sub="no leaked feature" />
           </div>
           <p className="text-sm">
-            At deployment the leaky model also under-predicts badly: mean predicted risk <strong>{pct(r.meanReal, 1)}</strong> versus an observed rate of{' '}
-            <strong>{pct(r.prev, 1)}</strong> (calibration intercept {fx(r.realCal.intercept, 2)}).
+            All of the apparent gain came from leakage: where the model is actually needed, it is no better than the clean model. It is also badly miscalibrated there. Mean
+            predicted risk is <strong>{pct(r.meanLeak, 1)}</strong> against an observed <strong>{pct(r.prevU, 1)}</strong> (calibration intercept {fx(r.leakCal.intercept, 2)}),
+            because it learned that “no antibiotics” means “low risk”.
           </p>
           <Callout kind="evidence">
-            This is the pattern Kamran et al. (NEJM AI 2024) found for a widely deployed sepsis model: AUROC ≈ 0.87 over the whole stay, ≈ 0.62 when restricted to predictions
+            Kamran et al. (NEJM AI 2024) found the same pattern for a widely deployed sepsis model. AUROC was ≈ 0.87 over the whole stay, ≈ 0.62 when restricted to predictions
             made before sepsis criteria were met, and ≈ 0.47 before the first treatment indicator.
           </Callout>
         </>
@@ -93,7 +95,7 @@ export function MissingnessWidget() {
         <p className="text-sm">
           In a logistic model with median imputation, the indicator “lactate not measured” has an adjusted odds ratio of <strong>{fx(r.missOr.or, 2)}</strong> (95% CI{' '}
           {fx(r.missOr.lo, 2)}–{fx(r.missOr.hi, 2)}). The model is learning <em>clinician behaviour</em>. That is useful only while ordering habits stay the same. Introduce a
-          lactate-for-everyone protocol and the signal disappears (try this in Module 10).
+          lactate-for-everyone protocol and the signal disappears. The Module 10 lab lets you test what that does to performance.
         </p>
       )}
     </WidgetFrame>

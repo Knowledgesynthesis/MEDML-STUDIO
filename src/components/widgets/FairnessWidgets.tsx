@@ -14,16 +14,22 @@ import { mean } from '@/lib/ml/stats';
 
 const diabetesCache = new Map<string, { p: number[]; y: number[]; g: number[] }>();
 
+/**
+ * The model is developed on accurate measurements; at deployment the HbA1c assay under-reads in Group B
+ * (the pulse-oximetry pattern: a device that performs differently by group). Same patients, same seed:
+ * only Group B's recorded HbA1c changes.
+ */
 function diabetesScores(bias: number, withGroup: boolean) {
   const k = `${bias}|${withGroup}`;
   let v = diabetesCache.get(k);
   if (!v) {
-    const ds = makeDiabetes(2400, 123, { a1cBiasB: bias });
-    const s = stratifiedSplit(ds.y, 0.3, 2024);
-    const meta: FeatureMeta[] = withGroup ? [...ds.features, { key: 'groupB', label: 'Group B', type: 'binary', description: 'Population group indicator' }] : ds.features;
-    const X = withGroup ? ds.X.map((r, i) => [...r, ds.group[i]]) : ds.X;
-    const m = fitModel({ kind: 'logistic', l2: 1 }, meta, pick(X, s.train), pick(ds.y, s.train));
-    v = { p: m.predict(pick(X, s.test)), y: pick(ds.y, s.test), g: pick(ds.group, s.test) };
+    const dev = makeDiabetes(2400, 123);
+    const deploy = bias ? makeDiabetes(2400, 123, { a1cBiasB: bias }) : dev;
+    const s = stratifiedSplit(dev.y, 0.3, 2024);
+    const meta: FeatureMeta[] = withGroup ? [...dev.features, { key: 'groupB', label: 'Group B', type: 'binary', description: 'Population group indicator' }] : dev.features;
+    const withG = (X: number[][]) => (withGroup ? X.map((r, i) => [...r, dev.group[i]]) : X);
+    const m = fitModel({ kind: 'logistic', l2: 1 }, meta, pick(withG(dev.X), s.train), pick(dev.y, s.train));
+    v = { p: m.predict(pick(withG(deploy.X), s.test)), y: pick(dev.y, s.test), g: pick(dev.group, s.test) };
     diabetesCache.set(k, v);
   }
   return v;
@@ -50,7 +56,7 @@ export function FairnessWidget() {
     { label: 'Mean predicted risk', key: 'meanPredicted', f: (v) => pct(v, 1), note: 'calibration-in-the-large' },
     { label: 'Observed / expected', key: 'oe', f: (v) => fx(v, 2), note: '>1 = under-prediction' },
     { label: 'AUROC (within group)', key: 'auroc', f: (v) => fx(v, 3) },
-    { label: 'Flagged for prevention programme', key: 'selectionRate', f: (v) => pct(v), note: 'demographic parity' },
+    { label: 'Flagged for programme', key: 'selectionRate', f: (v) => pct(v), note: 'demographic parity' },
     { label: 'Sensitivity (TPR)', key: 'tpr', f: (v) => pct(v), note: 'equal opportunity' },
     { label: 'False-positive rate', key: 'fpr', f: (v) => pct(v), note: 'equalized odds = TPR and FPR' },
     { label: 'PPV', key: 'ppv', f: (v) => pct(v), note: 'predictive parity' },
@@ -58,18 +64,18 @@ export function FairnessWidget() {
   return (
     <WidgetFrame
       title="Fairness audit: one diabetes-prevention model, two groups"
-      tryThis="1) With no bias and one shared threshold, compare the O/E ratios. 2) Unlink the thresholds and equalise sensitivity: PPV then diverges. 3) Add HbA1c measurement bias and watch Group B lose sensitivity."
+      tryThis="(1) With no bias and one shared threshold, compare the O/E ratios: the model under-predicts for Group B. (2) Include group membership as a predictor and recheck calibration. (3) Unlink the thresholds and equalise sensitivity: PPV and flag rates then diverge. (4) Add HbA1c measurement bias at deployment and watch Group B's sensitivity fall."
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Slider
-          label="HbA1c under-reads in Group B by"
+          label="At deployment, HbA1c under-reads in Group B by"
           value={bias}
           min={0}
           max={0.4}
           step={0.2}
           onChange={setBias}
           format={(v) => `${v.toFixed(1)} %-points`}
-          hint="Measurement bias: same physiology, lower recorded value (compare pulse oximetry, Sjoding 2020)."
+          hint="The model was developed on accurate values. Same physiology, lower recorded value, as with pulse oximetry (Sjoding 2020)."
         />
         <div className="space-y-2">
           <Toggle checked={withGroup} onChange={setWithGroup} label="Include group membership as a predictor" />
@@ -83,13 +89,13 @@ export function FairnessWidget() {
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-sm">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs text-muted-fg">
                   <th className="py-1.5">Metric</th>
                   <th className="py-1.5 text-right">Group A</th>
                   <th className="py-1.5 text-right">Group B</th>
-                  <th className="py-1.5 pl-3">Fairness criterion</th>
+                  <th className="hidden py-1.5 pl-3 sm:table-cell">Fairness criterion</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,7 +108,7 @@ export function FairnessWidget() {
                       <td className="py-1.5">{row.label}</td>
                       <td className="num py-1.5 text-right font-mono">{row.f(a)}</td>
                       <td className={cn('num py-1.5 text-right font-mono', gap && 'font-semibold text-warn')}>{row.f(b)}</td>
-                      <td className="py-1.5 pl-3 text-xs text-muted-fg">{row.note}</td>
+                      <td className="hidden py-1.5 pl-3 text-xs text-muted-fg sm:table-cell">{row.note}</td>
                     </tr>
                   );
                 })}
@@ -194,9 +200,9 @@ export function LabelBiasWidget() {
       </div>
       <HBars
         rows={[
-          { label: 'Group B share of population', value: popB, color: 'var(--c5)' },
-          { label: 'Group B share of selected', value: shareB, color: label === 'cost' ? 'var(--bad)' : 'var(--good)' },
-          { label: 'If we selected by true need', value: shareOracle, color: 'var(--c3)' },
+          { label: 'Population', sub: 'Group B share', value: popB, color: 'var(--c5)' },
+          { label: 'Selected by model', sub: 'Group B share', value: shareB, color: label === 'cost' ? 'var(--bad)' : 'var(--good)' },
+          { label: 'Selected by true need', sub: 'Group B share', value: shareOracle, color: 'var(--c3)' },
         ]}
         format={(v) => pct(v)}
         domain={[0, Math.max(popB, shareB, shareOracle) * 1.2]}

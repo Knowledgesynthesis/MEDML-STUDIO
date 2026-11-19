@@ -135,9 +135,9 @@ export const m10: ModuleDef = {
               </td>
             </tr>
             <tr>
-              <td>ONC HTI-1 → HTI-5 (Oct 2026)</td>
+              <td>ONC HTI-1 → HTI-5 (final Oct 2026, effective 28 Dec 2026)</td>
               <td>
-                Certified EHRs no longer have to expose DSI source attributes or intervention risk-management information <Cite id="hti5_2026" />. Ask vendors for model facts in
+                Certified EHRs will no longer have to expose DSI source attributes or intervention risk-management information <Cite id="hti5_2026" />. Ask vendors for model facts in
                 contracts.
               </td>
             </tr>
@@ -190,10 +190,10 @@ export const m10: ModuleDef = {
     },
     {
       id: 'm10q2',
-      stem: 'After an ED introduces lactate for every patient with suspected infection, the sepsis model’s AUROC drops. What is the most likely reason?',
-      options: ['Lactate became less prognostic biologically', 'The model relied partly on whether lactate was ordered; a practice change removed that signal', 'The thermometer changed', 'Random chance only'],
+      stem: 'Your ED is about to introduce lactate testing for every patient with suspected infection. The sepsis model includes a “lactate not measured” indicator. What should you do?',
+      options: ['Nothing: more data can only improve the model', 'Re-validate discrimination and calibration after the change, because the indicator encoded the old ordering practice and the model’s behaviour may shift in either direction', 'Remove lactate from the model immediately', 'Lower the alert threshold pre-emptively'],
       answer: 1,
-      rationale: 'Missingness carried clinician judgement. When everyone is tested, the indicator is always 0 and the information disappears.',
+      rationale: 'Missingness carried clinician judgement. When everyone is tested the indicator becomes constant and real lactate values replace imputed ones. The net effect on performance cannot be assumed, so measure it. Try it in the deployment lab.',
     },
     {
       id: 'm10q3',

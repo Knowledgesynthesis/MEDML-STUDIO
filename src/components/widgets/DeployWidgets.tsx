@@ -13,11 +13,11 @@ type Update = 'none' | 'intercept' | 'logistic';
 export function ShiftWidget() {
   const [age, setAge] = useState(HOME_SITE.ageMean);
   const [shift, setShift] = useState(0);
-  const [protocol, setProtocol] = useState<'habit' | 'all'>('habit');
+  const [protocol, setProtocol] = useState<'rare' | 'habit' | 'all'>('habit');
   const [thermo, setThermo] = useState(0);
   const [update, setUpdate] = useState<Update>('none');
   const r = useComputed(() => {
-    const site: SepsisSite = { name: 'External', ageMean: age, outcomeShift: shift, lactateOrderShift: protocol === 'all' ? Infinity : 0, tempOffset: thermo };
+    const site: SepsisSite = { name: 'External', ageMean: age, outcomeShift: shift, lactateOrderShift: protocol === 'all' ? Infinity : protocol === 'rare' ? -2.5 : 0, tempOffset: thermo };
     const ext = makeSepsis(2400, 777, site);
     const m = getModel('sepsis', STANDARD_SPECS.logistic_quadratic);
     const p = m.predict(ext.X);
@@ -42,12 +42,12 @@ export function ShiftWidget() {
   return (
     <WidgetFrame
       title="Deploy the sepsis model at another hospital"
-      tryThis="first make the external population older, then introduce a 'lactate for everyone' protocol, then add a thermometer that reads 0.4 °C low. After each change, try updating the intercept."
+      tryThis="change one thing at a time. (1) Make the population older: with a well-specified model, case-mix shift alone does little. (2) Raise baseline risk by +0.7: calibration breaks while AUROC holds, and re-estimating the intercept repairs it. (3) Set the thermometer 0.8 °C low: discrimination falls too, and recalibration cannot recover it. (4) Change lactate ordering: re-validate rather than assume the direction of the effect."
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Slider label="Mean age at new site" value={age} min={40} max={78} step={2} onChange={setAge} format={(v) => `${v} y`} hint="Case-mix shift (covariate shift)" />
         <Slider label="Baseline risk shift (log-odds)" value={shift} min={-1} max={1} step={0.1} onChange={setShift} format={(v) => fx(v, 1)} hint="Different outcome definition, coding, or unmeasured case mix" />
-        <Slider label="Thermometer offset" value={thermo} min={-0.6} max={0.6} step={0.1} onChange={setThermo} format={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} °C`} hint="Measurement shift: a different device" />
+        <Slider label="Thermometer offset" value={thermo} min={-1} max={1} step={0.1} onChange={setThermo} format={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} °C`} hint="Measurement shift: a different device" />
         <div className="space-y-1">
           <div className="text-sm font-medium">Lactate ordering at new site</div>
           <Segmented
@@ -55,11 +55,12 @@ export function ShiftWidget() {
             value={protocol}
             onChange={setProtocol}
             options={[
+              { value: 'rare', label: 'Rarely ordered' },
               { value: 'habit', label: 'Same habits' },
               { value: 'all', label: 'Protocol: everyone' },
             ]}
           />
-          <p className="text-xs text-muted-fg">Practice-pattern shift: missingness stops carrying information</p>
+          <p className="text-xs text-muted-fg">Practice-pattern shift: changes what “not measured” means</p>
         </div>
       </div>
       <div className="space-y-1">

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { Link } from '@/components/Link';
-import { Card, CardBody, Badge, Callout } from '@/components/ui';
+import { Badge, Callout } from '@/components/ui';
 import { Quiz } from '@/components/learn/Quiz';
 import { GLOSSARY, type Term } from '@/content/glossary';
 import { REFERENCES, type Reference } from '@/content/references';
@@ -40,23 +40,21 @@ export function Glossary() {
       </p>
       <dl className="space-y-3">
         {list.map((t) => (
-          <Card key={t.term}>
-            <CardBody className="space-y-1.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <dt className="font-semibold">{t.term}</dt>
-                <Badge>{t.category}</Badge>
-              </div>
-              <dd className="space-y-1.5 text-sm">
-                <p>{t.definition}</p>
-                {t.example && <p className="text-muted-fg">Example: {t.example}</p>}
-                {t.module && (
-                  <Link to={`/learn/${t.module}`} className="text-xs text-primary hover:underline">
-                    Module {MODULE_MAP[t.module].number}: {MODULE_MAP[t.module].title} →
-                  </Link>
-                )}
-              </dd>
-            </CardBody>
-          </Card>
+          <div key={t.term} className="space-y-1.5 rounded-xl border bg-card p-4 shadow-sm sm:p-5">
+            <dt className="flex flex-wrap items-center justify-between gap-2 font-semibold">
+              {t.term}
+              <Badge>{t.category}</Badge>
+            </dt>
+            <dd className="space-y-1.5 text-sm">
+              <p>{t.definition}</p>
+              {t.example && <p className="text-muted-fg">Example: {t.example}</p>}
+              {t.module && (
+                <Link to={`/learn/${t.module}`} className="text-xs text-primary underline underline-offset-2">
+                  Module {MODULE_MAP[t.module].number}: {MODULE_MAP[t.module].title} →
+                </Link>
+              )}
+            </dd>
+          </div>
         ))}
       </dl>
     </div>
@@ -82,7 +80,7 @@ export function References() {
             {by(t).map((r) => (
               <li key={r.id} id={`ref-${r.id}`} className="leading-snug">
                 <span>{r.citation} </span>
-                <a href={r.url} target="_blank" rel="noreferrer" className="break-all text-primary hover:underline">
+                <a href={r.url} target="_blank" rel="noreferrer" className="break-all text-primary underline underline-offset-2">
                   {r.url.replace(/^https:\/\//, '')}
                 </a>
               </li>

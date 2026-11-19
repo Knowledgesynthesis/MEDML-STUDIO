@@ -35,7 +35,7 @@ export function RefList({ ids }: { ids: string[] }) {
         return (
           <li key={k} id={`ref-${k}`} className="leading-snug">
             <span className="text-muted-fg">{r.citation} </span>
-            <a href={r.url} target="_blank" rel="noreferrer" className="break-all text-primary underline-offset-2 hover:underline">
+            <a href={r.url} target="_blank" rel="noreferrer" className="break-all text-primary underline underline-offset-2">
               {r.url.replace(/^https:\/\//, '')}
             </a>
           </li>

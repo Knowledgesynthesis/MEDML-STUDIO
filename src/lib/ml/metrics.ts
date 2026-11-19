@@ -118,9 +118,19 @@ export function logLoss(p: number[], y: number[], eps = 1e-6): number {
  */
 export function calibrationStats(p: number[], y: number[]): { intercept: number; slope: number; oe: number; slopeIntercept: number } {
   const lp = p.map((v) => logit(v));
-  // intercept with offset: 1-D Newton
+  // log-likelihood of logit P(y=1) = a + b·lp, used for step-halving so Newton cannot diverge
+  // (degenerate inputs such as 0/1 leaf probabilities from deep trees otherwise blow up).
+  const ll = (a0: number, b: number) => {
+    let s = 0;
+    for (let i = 0; i < lp.length; i++) {
+      const eta = a0 + b * lp[i];
+      s += y[i] ? -Math.log1p(Math.exp(-eta)) : -Math.log1p(Math.exp(eta));
+    }
+    return s;
+  };
+  // intercept with offset: damped 1-D Newton
   let a = 0;
-  for (let it = 0; it < 50; it++) {
+  for (let it = 0; it < 100; it++) {
     let g = 0;
     let h = 0;
     for (let i = 0; i < lp.length; i++) {
@@ -128,14 +138,16 @@ export function calibrationStats(p: number[], y: number[]): { intercept: number;
       g += y[i] - q;
       h += q * (1 - q);
     }
-    const step = g / Math.max(h, 1e-12);
+    let step = g / Math.max(h, 1e-12);
+    const cur = ll(a, 1);
+    for (let k = 0; k < 40 && ll(a + step, 1) < cur; k++) step /= 2;
     a += step;
     if (Math.abs(step) < 1e-10) break;
   }
-  // slope: 2-D Newton on [a, b]
+  // slope: damped 2-D Newton on [a, b]
   let b0 = 0;
   let b1 = 1;
-  for (let it = 0; it < 100; it++) {
+  for (let it = 0; it < 200; it++) {
     let g0 = 0;
     let g1 = 0;
     let h00 = 0;
@@ -163,9 +175,12 @@ export function calibrationStats(p: number[], y: number[]): { intercept: number;
     } catch {
       break;
     }
-    b0 += d[0];
-    b1 += d[1];
-    if (Math.abs(d[0]) + Math.abs(d[1]) < 1e-10) break;
+    const cur = ll(b0, b1);
+    let f = 1;
+    for (let k = 0; k < 40 && ll(b0 + f * d[0], b1 + f * d[1]) < cur; k++) f /= 2;
+    b0 += f * d[0];
+    b1 += f * d[1];
+    if (Math.abs(f * d[0]) + Math.abs(f * d[1]) < 1e-10) break;
   }
   const oe = y.reduce((s, v) => s + v, 0) / p.reduce((s, v) => s + v, 0);
   return { intercept: a, slope: b1, oe, slopeIntercept: b0 };

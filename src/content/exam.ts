@@ -102,9 +102,9 @@ export const EXAM: Question[] = [
   },
   {
     id: 'x15',
-    stem: 'ONC’s HTI-5 rule (October 2026) removed DSI source-attribute requirements. What is the practical implication for a health system buying a predictive model?',
+    stem: 'ONC’s HTI-5 final rule (effective 28 December 2026) removes DSI source-attribute requirements. What is the practical implication for a health system buying a predictive model?',
     options: ['Vendors must still publish model cards by law', 'Transparency must be secured through contracts and local governance: request intended use, training data, validation, subgroup performance and update plans', 'Predictive models are now banned', 'Local validation is no longer needed'],
     answer: 1,
-    rationale: 'With the federal certification requirement gone, purchasers must demand model facts and validate locally themselves.',
+    rationale: 'Once the federal certification requirement is removed, purchasers must demand model facts in contracts and validate locally themselves.',
   },
 ];

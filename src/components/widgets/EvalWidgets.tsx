@@ -68,7 +68,7 @@ export function ThresholdWidget() {
           <Stat label="Patients flagged" value={pct(st.flaggedRate)} />
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
         <div>
           <div className="mb-1 text-sm font-medium">ROC curve (AUROC {fx(r.auc, 3)})</div>
           <Chart x={[0, 1]} y={[0, 1]} square maxHeight={280} xLabel="1 − specificity" yLabel="Sensitivity" xFormat={(v) => fx(v, 1)} yFormat={(v) => fx(v, 1)} ariaLabel="ROC curve with operating point">

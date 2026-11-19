@@ -178,12 +178,12 @@ function ruleText(node: Extract<TreeNode, { leaf: false }>, m: FittedModel): { y
 function TreeView({ node, m, label, depth = 0 }: { node: TreeNode; m: FittedModel; label?: string; depth?: number }) {
   if (node.leaf) {
     return (
-      <div className="flex items-center gap-2 py-0.5 text-sm" style={{ paddingLeft: depth * 14 }}>
+      <div className="flex flex-wrap items-center gap-x-2 py-0.5 text-sm" style={{ paddingLeft: depth * 14 }}>
         {label && <span className="text-muted-fg">{label} →</span>}
         <span className="inline-flex h-2 w-16 overflow-hidden rounded bg-muted">
           <span className="h-full" style={{ width: `${node.value * 100}%`, background: 'var(--c2)' }} />
         </span>
-        <span className="num font-mono text-xs">
+        <span className="num whitespace-nowrap font-mono text-xs">
           risk {pct(node.value)} · n={node.n}
         </span>
       </div>
@@ -308,16 +308,16 @@ export function ModelComparisonWidget({ initial = 'sepsis' as DatasetId, compact
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs text-muted-fg">
                   <th className="py-1.5 pr-2">Model</th>
                   <th className="py-1.5 pr-2 text-right">Train AUROC</th>
                   <th className="py-1.5 pr-2 text-right">Test AUROC (95% CI)</th>
-                  <th className="py-1.5 pr-2 text-right">Brier</th>
-                  <th className="py-1.5 pr-2 text-right">Scaled Brier</th>
-                  <th className="py-1.5 pr-2 text-right">Cal. slope</th>
-                  <th className="py-1.5 text-right">Cal. intercept</th>
+                  <th className="hidden py-1.5 pr-2 text-right sm:table-cell">Brier</th>
+                  <th className="hidden py-1.5 pr-2 text-right sm:table-cell">Scaled Brier</th>
+                  <th className="py-1.5 pr-2 text-right">Slope</th>
+                  <th className="py-1.5 text-right">Intercept</th>
                 </tr>
               </thead>
               <tbody>
@@ -329,10 +329,10 @@ export function ModelComparisonWidget({ initial = 'sepsis' as DatasetId, compact
                     </td>
                     <td className="num py-1.5 pr-2 text-right font-mono">{fx(trainAuc, 3)}</td>
                     <td className={cn('num py-1.5 pr-2 text-right font-mono', sum.auroc === best && 'font-semibold text-good')}>
-                      {fx(sum.auroc, 3)} <span className="text-xs text-muted-fg">({fx(sum.aurocCI[0], 2)}–{fx(sum.aurocCI[1], 2)})</span>
+                      {fx(sum.auroc, 3)} <span className="block text-xs font-normal text-muted-fg sm:inline">({fx(sum.aurocCI[0], 2)}–{fx(sum.aurocCI[1], 2)})</span>
                     </td>
-                    <td className="num py-1.5 pr-2 text-right font-mono">{fx(sum.brier, 3)}</td>
-                    <td className="num py-1.5 pr-2 text-right font-mono">{fx(sum.scaledBrier, 3)}</td>
+                    <td className="num hidden py-1.5 pr-2 text-right font-mono sm:table-cell">{fx(sum.brier, 3)}</td>
+                    <td className="num hidden py-1.5 pr-2 text-right font-mono sm:table-cell">{fx(sum.scaledBrier, 3)}</td>
                     <td className={cn('num py-1.5 pr-2 text-right font-mono', Math.abs(sum.calSlope - 1) > 0.2 && 'text-warn')}>{fx(sum.calSlope, 2)}</td>
                     <td className={cn('num py-1.5 text-right font-mono', Math.abs(sum.calIntercept) > 0.2 && 'text-warn')}>{fx(sum.calIntercept, 2)}</td>
                   </tr>

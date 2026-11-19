@@ -162,7 +162,7 @@ export const m1: ModuleDef = {
             </li>
             <li>
               The ONC HTI-1 rule required certified EHRs to expose 31 “source attributes” for predictive decision-support interventions <Cite id="hti1_2024" />. The{' '}
-              <strong>HTI-5 final rule (October 2026) removed those requirements</strong> <Cite id="hti5_2026" />, so transparency now depends on what you demand from vendors.
+              <strong>HTI-5 final rule (published October 2026, effective 28 December 2026) removes those requirements</strong> <Cite id="hti5_2026" />, so transparency will depend on what you demand from vendors.
             </li>
             <li>
               HHS rule 45 CFR §92.210 requires covered entities to make reasonable efforts to identify and mitigate the risk of discrimination from patient-care decision-support tools{' '}
