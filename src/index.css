@@ -1,84 +1,145 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-  }
+@custom-variant dark (&:where(.dark, .dark *));
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-  }
+:root {
+  --bg: #f7f9fc;
+  --fg: #0f172a;
+  --card: #ffffff;
+  --muted: #eef2f7;
+  --muted-fg: #475569;
+  --border: #dbe3ee;
+  --primary: #0369a1;
+  --primary-fg: #ffffff;
+  --ring: #0284c7;
+  --good: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
+  --c1: #2563eb;
+  --c2: #ea580c;
+  --c3: #0f766e;
+  --c4: #7c3aed;
+  --c5: #64748b;
+  --grid: #e5eaf1;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0b1220;
+  --fg: #e5e9f0;
+  --card: #111a2c;
+  --muted: #18233a;
+  --muted-fg: #9aa8bd;
+  --border: #24324d;
+  --primary: #38bdf8;
+  --primary-fg: #06121f;
+  --ring: #7dd3fc;
+  --good: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --c1: #60a5fa;
+  --c2: #fb923c;
+  --c3: #2dd4bf;
+  --c4: #a78bfa;
+  --c5: #94a3b8;
+  --grid: #1f2b43;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-fg: var(--muted-fg);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-ring: var(--ring);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-c1: var(--c1);
+  --color-c2: var(--c2);
+  --color-c3: var(--c3);
+  --color-c4: var(--c4);
+  --color-c5: var(--c5);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 4.5rem;
   }
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  input[type='range'] {
+    accent-color: var(--primary);
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  .prose-med p {
+    margin: 0.65rem 0;
+  }
+  .prose-med ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin: 0.5rem 0;
+  }
+  .prose-med ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+    margin: 0.5rem 0;
+  }
+  .prose-med li {
+    margin: 0.25rem 0;
+  }
+  .prose-med h3 {
+    font-weight: 650;
+    font-size: 1.05rem;
+    margin-top: 1.25rem;
+  }
+  .prose-med strong {
+    font-weight: 650;
+  }
+  .prose-med table {
+    width: 100%;
+    font-size: 0.875rem;
+    border-collapse: collapse;
+  }
+  .prose-med th,
+  .prose-med td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.4rem 0.5rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .prose-med th {
+    font-weight: 600;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-/* Custom scrollbar for dark mode */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-muted;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-md;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

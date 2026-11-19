@@ -1,12 +1,22 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="MedML Studio: Interpretable Machine Learning for Clinical Decision Support" />
-    <meta name="theme-color" content="#0f172a" />
-    <title>MedML Studio</title>
+    <meta name="description" content="An interactive, evidence-based course on clinical prediction models: discrimination, calibration, clinical utility, explainability (SHAP, LIME), fairness, and safe deployment." />
+    <meta name="theme-color" content="#0b1220" />
+    <title>MedML Studio — Clinical prediction models, done right</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('medml-theme');
+          var dark = t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) { document.documentElement.classList.add('dark'); }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -27,3 +27,9 @@ dist-ssr
 .env
 .env.local
 .env.production
+
+# Test / tooling output
+coverage
+dev-dist
+node_modules/.tmp
+*.tsbuildinfo
